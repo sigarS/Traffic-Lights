@@ -8,7 +8,7 @@ class Street:
         self.start = 0
         self.end = 0
         self.name = ""
-
+        self.times_used = 0
     def street_creator(self, details):
 
         self.start = int(details[START])

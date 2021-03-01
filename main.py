@@ -2,10 +2,13 @@ from cars import Cars
 from street import Street
 from junction import Junction
 from collections import defaultdict
+import numpy as np
 STREET_NAME = 2
 
-def main():
-    file = open("f.txt", "r")
+def main(filename):
+
+    file = open(filename + ".txt", "r")
+
     content = file.read().strip().split('\n')
     file.close()
 
@@ -52,20 +55,24 @@ def main():
 
         if cars[i].current_intersection not in intersection_change:
             intersection_change.append(cars[i].current_intersection)
-    print(f"intersection_change = {intersection_change}")
-    time_add_car = {} #dictionary that holds the time at which a car should be added.
 
+    time_add_car = {} #dictionary that holds the time at which a car should be added.
+    intersection_used = set()# holds a set of all intersections used
     for time in range(simulation_time):
-        #print(f"time = {time}")
+
         end = len(intersection_change)
         i = 0
+
         while i < end:
 
             junction = intersection_change[i]
-
+            intersection_used.add(junction)
 
             car_moved = cars[intersections[junction].compare_cars(cars)].num
+
+
             intersections[junction].remove_car(cars[car_moved])
+
 
             if intersections[junction].num_cars == 0:
                 # removing car and shrinking the num of iteration required
@@ -73,13 +80,14 @@ def main():
                 i -= 1
                 end -= 1
 
+
             cars[car_moved].next_road(streets)
             # car has reached its destination
             if cars[car_moved].path[0] == cars[car_moved].destination:
                 pass
             else:
                 # gets time to add car to a certain intersection and the car to be added
-                #print(f"car moved = {car_moved}", cars[car_moved].path)
+
                 time_to_add = streets[cars[car_moved].current_street].time_to_cross + time
 
                 if time_to_add in time_add_car.keys():
@@ -93,5 +101,28 @@ def main():
                 intersections[cars[car].current_intersection].add_car(cars[car])
                 if cars[car].current_intersection not in intersection_change:
                     intersection_change.append(cars[car].current_intersection)
+    document = open(filename + " ans.txt", "w")
+    document.write( f"{len(intersection_used)}\n")
+    for intersection, inter_class in intersections.items():
+
+        count = 0
+        ans = ""
+        if inter_class.used:
+            document.write(f"{intersection}\n")
+            if inter_class.num_paths_in == 1:
+                document.write(f"1\n{list(inter_class.cars_in_streets.keys())[0]} 1\n")
+                pass
+            else:
+                for street in inter_class.cars_in_streets:
+
+                    if streets[street].times_used != 0:
+                        count += 1
+                        seconds_on = max(round(inter_class.num_paths_in * streets[street].times_used/inter_class.times_used), 1)
+                        ans += f"{street} {seconds_on}\n"
+
+                if count != 0:
+
+                    document.write(f"{count}\n{ans}")
+
 if __name__ == '__main__':
     main()
